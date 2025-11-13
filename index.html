@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delicious Bites - Food Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        .card-hover {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-12px);
+        }
+        .image-zoom {
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover .image-zoom {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-pink-50">
+    
+    <!-- Hero Section -->
+    <header class="relative overflow-hidden bg-gradient-to-r from-amber-600 via-orange-500 to-pink-600 text-white">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.2) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.2) 0%, transparent 50%)"></div>
+        </div>
+        
+        <div class="relative max-w-7xl mx-auto px-6 py-24">
+            <div class="text-center animate-fade-in">
+                <div class="inline-block mb-4 px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold">
+                    Premium Food Gallery ✨
+                </div>
+                <h1 class="text-7xl font-bold mb-6 tracking-tight">
+                    Delicious Bites
+                </h1>
+                <p class="text-2xl opacity-90 mb-10 font-light">
+                    Discover culinary perfection in every frame
+                </p>
+                
+                <!-- Search Bar -->
+                <div class="max-w-2xl mx-auto relative group">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search for delicious treats..."
+                        class="w-full px-8 py-5 rounded-full text-gray-800 shadow-2xl focus:outline-none focus:ring-4 focus:ring-white/50 transition-all text-lg"
+                    />
+                    <svg class="absolute right-8 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-orange-500 transition-colors" width="26" height="26" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex justify-center gap-12 mt-12">
+                    <div class="text-center">
+                        <div class="text-4xl font-bold">17+</div>
+                        <div class="text-sm opacity-80">Dishes</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold">4.8★</div>
+                        <div class="text-sm opacity-80">Avg Rating</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-4xl font-bold"><span id="favCount">0</span></div>
+                        <div class="text-sm opacity-80">Favorites</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-amber-50 to-transparent"></div>
+    </header>
+
+    <!-- Category Filter -->
+    <div class="max-w-7xl mx-auto px-6 py-16">
+        <div class="flex flex-wrap justify-center gap-4 mb-16" id="categoryButtons">
+            <button onclick="filterCategory('all')" class="category-btn active px-10 py-4 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-3 shadow-lg text-lg bg-gradient-to-r from-orange-500 to-pink-500 text-white scale-105 shadow-xl">
+                <span>✨</span> All
+            </button>
+            <button onclick="filterCategory('desserts')" class="category-btn px-10 py-4 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-3 shadow-lg text-lg bg-white text-gray-700 hover:bg-gray-50">
+                <span>🍰</span> Desserts
+            </button>
+            <button onclick="filterCategory('drinks')" class="category-btn px-10 py-4 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-3 shadow-lg text-lg bg-white text-gray-700 hover:bg-gray-50">
+                <span>☕</span> Drinks
+            </button>
+            <button onclick="filterCategory('food')" class="category-btn px-10 py-4 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-3 shadow-lg text-lg bg-white text-gray-700 hover:bg-gray-50">
+                <span>👨‍🍳</span> Food
+            </button>
+        </div>
+
+        <!-- Results Count -->
+        <div class="text-center mb-8">
+            <p class="text-gray-600 text-lg">
+                Showing <span class="font-bold text-orange-600" id="resultCount">17</span> delicious items
+            </p>
+        </div>
+
+        <!-- Food Grid -->
+        <div id="foodGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"></div>
+
+        <!-- No Results -->
+        <div id="noResults" class="text-center py-20 hidden">
+            <div class="text-6xl mb-4">😔</div>
+            <h3 class="text-2xl font-bold text-gray-700 mb-2">No items found</h3>
+            <p class="text-gray-500">Try adjusting your search or filters</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 text-white py-16 mt-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-8">
+                <h3 class="text-4xl font-bold mb-3 bg-gradient-to-r from-orange-400 to-pink-400 bg-clip-text text-transparent">
+                    Delicious Bites
+                </h3>
+                <p class="text-gray-400 text-lg">Crafted with love, served with passion</p>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-8 mb-8">
+                <a href="#" class="hover:text-orange-400 transition-colors font-medium">About Us</a>
+                <a href="#" class="hover:text-orange-400 transition-colors font-medium">Full Menu</a>
+                <a href="#" class="hover:text-orange-400 transition-colors font-medium">Contact</a>
+                <a href="#" class="hover:text-orange-400 transition-colors font-medium">Gallery</a>
+                <a href="#" class="hover:text-orange-400 transition-colors font-medium">Events</a>
+            </div>
+            
+            <div class="text-center text-gray-500 text-sm">
+                © 2025 Delicious Bites. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const foodItems = [
+            { id: 1, name: 'Delicious Delight', category: 'desserts', rating: 4.9, image: 'pics/1.jpg', description: 'Sweet perfection' },
+            { id: 2, name: 'Gourmet Creation', category: 'food', rating: 4.8, image: 'pics/2.jpg', description: 'Culinary masterpiece' },
+            { id: 3, name: 'Sweet Sensation', category: 'desserts', rating: 4.7, image: 'pics/3.jpg', description: 'Heavenly treat' },
+            { id: 4, name: 'Artisan Dish', category: 'food', rating: 5.0, image: 'pics/4.jpg', description: 'Handcrafted excellence' },
+            { id: 5, name: 'Premium Treat', category: 'desserts', rating: 4.9, image: 'pics/5.jpg', description: 'Indulgent pleasure' },
+            { id: 6, name: 'Specialty Plate', category: 'food', rating: 4.6, image: 'pics/6.jpg', description: 'Chef\'s special' },
+            { id: 7, name: 'Decadent Dessert', category: 'desserts', rating: 4.8, image: 'pics/7.jpg', description: 'Pure bliss' },
+            { id: 8, name: 'Signature Dish', category: 'food', rating: 4.7, image: 'pics/8.jpg', description: 'House favorite' },
+            { id: 9, name: 'Divine Delicacy', category: 'drinks', rating: 4.9, image: 'pics/9.jpg', description: 'Refreshing blend' },
+            { id: 10, name: 'Exquisite Flavor', category: 'desserts', rating: 4.8, image: 'pics/10.jpg', description: 'Tasteful creation' },
+            { id: 11, name: 'Gourmet Selection', category: 'food', rating: 4.9, image: 'pics/11.jpg', description: 'Fine dining' },
+        ];
+
+        let likedItems = new Set();
+        let currentCategory = 'all';
+        let searchTerm = '';
+
+        function toggleLike(id) {
+            if (likedItems.has(id)) {
+                likedItems.delete(id);
+            } else {
+                likedItems.add(id);
+            }
+            document.getElementById('favCount').textContent = likedItems.size;
+            renderGrid();
+        }
+
+        function filterCategory(category) {
+            currentCategory = category;
+            
+            // Update button styles
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-gradient-to-r', 'from-orange-500', 'to-pink-500', 'text-white', 'scale-105', 'shadow-xl', 'active');
+                btn.classList.add('bg-white', 'text-gray-700', 'hover:bg-gray-50');
+            });
+            event.target.closest('button').classList.add('bg-gradient-to-r', 'from-orange-500', 'to-pink-500', 'text-white', 'scale-105', 'shadow-xl', 'active');
+            event.target.closest('button').classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50');
+            
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const filtered = foodItems.filter(item => {
+                const matchesCategory = currentCategory === 'all' || item.category === currentCategory;
+                const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                     item.description.toLowerCase().includes(searchTerm.toLowerCase());
+                return matchesCategory && matchesSearch;
+            });
+
+            document.getElementById('resultCount').textContent = filtered.length;
+            const grid = document.getElementById('foodGrid');
+            const noResults = document.getElementById('noResults');
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            
+            grid.innerHTML = filtered.map(item => `
+                <div class="group relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl card-hover">
+                    <div class="relative h-80 overflow-hidden bg-gray-100">
+                        <img
+                            src="${item.image}"
+                            alt="${item.name}"
+                            class="w-full h-full object-cover image-zoom"
+                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22400%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22400%22 height=%22400%22/%3E%3Ctext fill=%22%239ca3af%22 font-family=%22sans-serif%22 font-size=%2224%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22%3EImage%3C/text%3E%3C/svg%3E'"
+                        />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        
+                        <button onclick="toggleLike(${item.id})" class="absolute top-4 right-4 w-14 h-14 bg-white/95 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform z-10">
+                            <svg width="24" height="24" fill="${likedItems.has(item.id) ? '#ef4444' : 'none'}" stroke="${likedItems.has(item.id) ? '#ef4444' : '#4b5563'}" viewBox="0 0 24 24" class="transition-all duration-300">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </button>
+
+                        <div class="absolute top-4 left-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-gray-900 px-4 py-2 rounded-full font-bold flex items-center gap-1.5 shadow-lg">
+                            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                            </svg>
+                            <span class="text-lg">${item.rating}</span>
+                        </div>
+
+                        <div class="absolute bottom-4 left-4 right-4 text-white opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-4 transition-all duration-300">
+                            <p class="text-sm font-medium">${item.description}</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors">
+                            ${item.name}
+                        </h3>
+                        <div class="flex items-center justify-between text-sm text-gray-500">
+                            <span class="capitalize bg-gray-100 px-3 py-1 rounded-full font-medium">
+                                ${item.category}
+                            </span>
+                        </div>
+                        
+                        <div class="mt-4 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 translate-y-4 transition-all duration-300">
+                            <button class="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all hover:scale-105">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchTerm = e.target.value;
+            renderGrid();
+        });
+
+        // Initial render
+        renderGrid();
+    </script>
+</body>
+</html>
